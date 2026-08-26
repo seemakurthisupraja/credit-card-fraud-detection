@@ -43,6 +43,8 @@ Therefore, this project focuses on:
 
 The project uses a credit card transaction dataset containing anonymized transaction features.
 
+> **Note:** The original dataset is not included in this repository because its file size exceeds GitHub's standard file-size limit. The dataset is used locally for model development and dashboard statistics.
+
 ### Dataset Characteristics
 
 | Statistic | Value |
@@ -132,12 +134,11 @@ A standard binary classification model commonly uses a probability threshold of 
 
 For this project, the decision threshold was optimized using validation data.
 
-### Final threshold
+### Final Threshold
 
 ```text
 0.9302
-
-
+```
 
 ---
 
@@ -178,3 +179,100 @@ Optimized Threshold
 Risk Classification
        ↓
 Prediction Result
+```
+
+---
+
+## ▶️ Running the Application
+
+### 1. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Dataset requirement
+
+The original dataset is not included in this repository because of its large file size.
+
+For the complete dashboard, place the dataset locally at:
+
+```text
+data/creditcard.csv
+```
+
+### 3. Run the Streamlit application
+
+```bash
+streamlit run app.py
+```
+
+The application will open in the browser at:
+
+```text
+http://localhost:8501
+```
+
+---
+
+## 📁 Project Structure
+
+```text
+credit-card-fraud-detection/
+│
+├── data/
+│   └── creditcard.csv
+│
+├── models/
+│   └── fraud_detection_model.pkl
+│
+├── notebooks/
+│   └── fraud_detection.ipynb
+│
+├── src/
+│
+├── app.py
+├── README.md
+├── requirements.txt
+└── .gitignore
+```
+
+### 📂 Folder Description
+
+| Folder/File | Purpose |
+|---|---|
+| `data/` | Contains the local credit card transaction dataset |
+| `models/` | Stores the trained XGBoost model |
+| `notebooks/` | Contains model development and experimentation |
+| `src/` | Reserved for reusable source code |
+| `app.py` | Streamlit application for real-time fraud prediction |
+| `requirements.txt` | Python project dependencies |
+| `.gitignore` | Files excluded from Git tracking |
+| `README.md` | Project documentation |
+
+---
+
+## 🛠️ Technologies Used
+
+- Python
+- Pandas
+- NumPy
+- Scikit-learn
+- XGBoost
+- Matplotlib
+- Streamlit
+- Joblib
+
+---
+
+## 📌 Key Highlights
+
+- Handles severe class imbalance in fraud detection
+- Compares three machine learning approaches
+- Selects XGBoost based on PR-AUC
+- Uses an optimized decision threshold of **0.9302**
+- Achieves **0.99 precision**
+- Achieves **0.75 recall**
+- Achieves **0.85 F1-score**
+- Provides real-time transaction risk analysis
+- Includes model evaluation and visual analytics

@@ -186,71 +186,87 @@ col1, col2 = st.columns(2)
 # ------------------------------------------------------------
 
 with col1:
-
     if st.button(
         "🟢 Load Genuine Transaction",
         use_container_width=True
     ):
 
-        try:
+        if DATA_PATH.exists():
 
-            data = pd.read_csv(DATA_PATH)
+            try:
 
-            genuine_data = data[
-                data["Class"] == 0
-            ]
+                data = pd.read_csv(DATA_PATH)
 
-            if len(genuine_data) > 0:
+                genuine_data = data[
+                    data["Class"] == 0
+                ]
 
-                sample = genuine_data.iloc[0].copy()
+                if len(genuine_data) > 0:
 
-                st.session_state["sample"] = sample
+                    sample = genuine_data.iloc[0].copy()
+                    st.session_state["sample"] = sample
 
-                st.success(
+                    st.success(
                     "🟢 Genuine transaction loaded from dataset."
+                    )
+
+            except Exception as e:
+
+                st.error(
+                    f"Could not load genuine transaction: {e}"
                 )
 
-        except Exception as e:
+        else:
 
-            st.error(
-                f"Could not load genuine transaction: {e}"
+            st.warning(
+                "⚠️ Dataset is not available online. "
+                "Please enter the transaction values manually."
             )
-
+    
 
 # ------------------------------------------------------------
 # Load fraud transaction
 # ------------------------------------------------------------
 
 with col2:
-
     if st.button(
-        "🔴 Load Fraud Transaction",
-        use_container_width=True
-    ):
+    "🔴 Load Fraud Transaction",
+    use_container_width=True
+):
 
-        try:
+        if DATA_PATH.exists():
 
-            data = pd.read_csv(DATA_PATH)
+            try:
 
-            fraud_data = data[
-                data["Class"] == 1
-            ]
+                data = pd.read_csv(DATA_PATH)
 
-            if len(fraud_data) > 0:
+                fraud_data = data[
+                    data["Class"] == 1
+                ]
 
-                sample = fraud_data.iloc[0].copy()
+                if len(fraud_data) > 0:
 
-                st.session_state["sample"] = sample
+                    sample = fraud_data.iloc[0].copy()
+                    st.session_state["sample"] = sample
+
+                    st.error(
+                        "🔴 Fraud transaction loaded from dataset."
+                    )
+
+            except Exception as e:
 
                 st.error(
-                    "🔴 Fraud transaction loaded from dataset."
+                    f"Could not load fraud transaction: {e}"
                 )
 
-        except Exception as e:
+        else:
 
-            st.error(
-                f"Could not load fraud transaction: {e}"
+            st.warning(
+                "⚠️ Dataset is not available online. "
+                "Please enter the transaction values manually."
             )
+
+    
 
 
 # ============================================================
@@ -1126,170 +1142,134 @@ st.write(
 # LOAD DATASET
 # ============================================================
 
-try:
+if DATA_PATH.exists():
 
-    # Load the original CSV dataset
-    dataset = pd.read_csv(DATA_PATH)
+    try:
 
+        # Load the original CSV dataset
+        dataset = pd.read_csv(DATA_PATH)
 
-    # ========================================================
-    # REMOVE DUPLICATE TRANSACTIONS
-    # ========================================================
+        # Remove duplicate transactions
+        dataset = dataset.drop_duplicates()
 
-    # Remove duplicate rows so the statistics match
-    # the cleaned dataset used during model development.
-    dataset = dataset.drop_duplicates()
+        # Calculate transaction counts
+        total_transactions = len(dataset)
 
-
-    # ========================================================
-    # CALCULATE TRANSACTION COUNTS
-    # ========================================================
-
-    # Count the total number of transactions
-    total_transactions = len(dataset)
-
-
-    # Count genuine transactions
-    # Class 0 = Genuine
-    genuine_transactions = int(
-        (dataset["Class"] == 0).sum()
-    )
-
-
-    # Count fraudulent transactions
-    # Class 1 = Fraud
-    fraud_transactions = int(
-        (dataset["Class"] == 1).sum()
-    )
-
-
-    # ========================================================
-    # CALCULATE FRAUD PERCENTAGE
-    # ========================================================
-
-    fraud_percentage = (
-        fraud_transactions /
-        total_transactions
-    ) * 100
-
-
-    # ========================================================
-    # DISPLAY DATASET STATISTICS
-    # ========================================================
-
-    st.subheader("📈 Transaction Statistics")
-
-
-    # Create four columns for the statistics
-    col1, col2, col3, col4 = st.columns(4)
-
-
-    # --------------------------------------------------------
-    # TOTAL TRANSACTIONS
-    # --------------------------------------------------------
-
-    with col1:
-
-        st.metric(
-            "Total Transactions",
-            f"{total_transactions:,}"
+        genuine_transactions = int(
+            (dataset["Class"] == 0).sum()
         )
 
-
-    # --------------------------------------------------------
-    # GENUINE TRANSACTIONS
-    # --------------------------------------------------------
-
-    with col2:
-
-        st.metric(
-            "Genuine Transactions",
-            f"{genuine_transactions:,}"
+        fraud_transactions = int(
+            (dataset["Class"] == 1).sum()
         )
 
+        fraud_percentage = (
+            fraud_transactions /
+            total_transactions
+        ) * 100
 
-    # --------------------------------------------------------
-    # FRAUD TRANSACTIONS
-    # --------------------------------------------------------
+    except Exception as e:
 
-    with col3:
-
-        st.metric(
-            "Fraud Transactions",
-            f"{fraud_transactions:,}"
+        st.error(
+            f"Unable to load dataset statistics: {e}"
         )
 
+        total_transactions = 283726
+        genuine_transactions = 283253
+        fraud_transactions = 473
+        fraud_percentage = 0.17
 
-    # --------------------------------------------------------
-    # FRAUD PERCENTAGE
-    # --------------------------------------------------------
+else:
 
-    with col4:
+    # Dataset is intentionally excluded from GitHub
+    # because of its large file size.
 
-        st.metric(
-            "Fraud Percentage",
-            f"{fraud_percentage:.2f}%"
-        )
+    total_transactions = 283726
+    genuine_transactions = 283253
+    fraud_transactions = 473
+    fraud_percentage = 0.17
 
 
-    # ========================================================
-    # TRANSACTION CLASS DISTRIBUTION
-    # ========================================================
+# ============================================================
+# DISPLAY DATASET STATISTICS
+# ============================================================
 
-    st.subheader(
-        "📊 Transaction Class Distribution"
+st.subheader("📈 Transaction Statistics")
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+
+    st.metric(
+        "Total Transactions",
+        f"{total_transactions:,}"
     )
 
+with col2:
 
-    # Create a DataFrame for the chart
-    distribution = pd.DataFrame(
-        {
-            "Class": [
-                "Genuine",
-                "Fraud"
-            ],
-            "Transactions": [
-                genuine_transactions,
-                fraud_transactions
-            ]
-        }
+    st.metric(
+        "Genuine Transactions",
+        f"{genuine_transactions:,}"
     )
 
+with col3:
 
-    # Display the transaction distribution
-    st.bar_chart(
-        distribution.set_index("Class")
+    st.metric(
+        "Fraud Transactions",
+        f"{fraud_transactions:,}"
     )
 
+with col4:
 
-    # ========================================================
-    # IMBALANCE INFORMATION
-    # ========================================================
-
-    st.info(
-        f"""
-        The dataset is highly imbalanced. There are
-        **{fraud_transactions:,} fraudulent transactions**
-        compared with **{genuine_transactions:,} genuine
-        transactions**.
-
-        Fraud represents only **{fraud_percentage:.2f}%**
-        of the cleaned dataset. This is why the project
-        uses class weighting, PR-AUC, and threshold
-        optimization instead of relying only on accuracy.
-        """
+    st.metric(
+        "Fraud Percentage",
+        f"{fraud_percentage:.2f}%"
     )
 
 
 # ============================================================
-# ERROR HANDLING
+# TRANSACTION CLASS DISTRIBUTION
 # ============================================================
 
-except Exception as e:
+st.subheader(
+    "📊 Transaction Class Distribution"
+)
 
-    st.error(
-        f"Unable to load dataset statistics: {e}"
-    )
+distribution = pd.DataFrame(
+    {
+        "Class": [
+            "Genuine",
+            "Fraud"
+        ],
+        "Transactions": [
+            genuine_transactions,
+            fraud_transactions
+        ]
+    }
+)
+
+st.bar_chart(
+    distribution.set_index("Class")
+)
+
+
+# ============================================================
+# IMBALANCE INFORMATION
+# ============================================================
+
+st.info(
+    f"""
+    The dataset is highly imbalanced. There are
+    **{fraud_transactions:,} fraudulent transactions**
+    compared with **{genuine_transactions:,} genuine
+    transactions**.
+
+    Fraud represents only **{fraud_percentage:.2f}%**
+    of the cleaned dataset. This is why the project
+    uses class weighting, PR-AUC, and threshold
+    optimization instead of relying only on accuracy.
+    """
+)
 
 # ============================================================
 # ABOUT THIS PROJECT
